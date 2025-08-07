@@ -3,13 +3,15 @@ package redis
 import (
 	"context"
 	"fmt"
-	"github.com/mikhail-karpov/url-shortener/internal/domain"
 	"time"
+
+	"github.com/mikhail-karpov/url-shortener/internal/domain"
+	"github.com/redis/go-redis/v9"
 )
 
 type redisShortUrl struct {
-	OriginalUrl string    `redis:"url"`
-	CreatedAt   time.Time `redis:"created_at"`
+	LongURL   string    `redis:"url"`
+	CreatedAt time.Time `redis:"created_at"`
 }
 
 type Repository struct {
@@ -17,19 +19,19 @@ type Repository struct {
 	ttl   time.Duration
 }
 
-func NewRepository(cache *Cache, ttl time.Duration) *Repository {
+func NewRepository(client *redis.Client, ttl time.Duration) *Repository {
 	return &Repository{
-		cache: cache,
+		cache: &Cache{client: client},
 		ttl:   ttl,
 	}
 }
 
 func (r *Repository) Add(ctx context.Context, shortUrl *domain.ShortURL) error {
 
-	key := key(shortUrl.Alias)
+	key := key(shortUrl.ID)
 	value := &redisShortUrl{
-		OriginalUrl: shortUrl.OriginalURL,
-		CreatedAt:   shortUrl.CreatedAt,
+		LongURL:   shortUrl.LongURL,
+		CreatedAt: shortUrl.CreatedAt,
 	}
 
 	err := r.cache.Put(ctx, key, value, r.ttl)
@@ -39,9 +41,9 @@ func (r *Repository) Add(ctx context.Context, shortUrl *domain.ShortURL) error {
 	return nil
 }
 
-func (r *Repository) Get(ctx context.Context, alias string) (*domain.ShortURL, error) {
+func (r *Repository) Get(ctx context.Context, id string) (*domain.ShortURL, error) {
 
-	key := key(alias)
+	key := key(id)
 	var redisShortUrl redisShortUrl
 	err := r.cache.Get(ctx, key, &redisShortUrl)
 	if err != nil {
@@ -49,9 +51,9 @@ func (r *Repository) Get(ctx context.Context, alias string) (*domain.ShortURL, e
 	}
 
 	shortUrl := &domain.ShortURL{
-		Alias:       alias,
-		OriginalURL: redisShortUrl.OriginalUrl,
-		CreatedAt:   redisShortUrl.CreatedAt,
+		ID:        id,
+		LongURL:   redisShortUrl.LongURL,
+		CreatedAt: redisShortUrl.CreatedAt,
 	}
 	return shortUrl, nil
 }

@@ -40,9 +40,9 @@ func (h *ShortenURLCmdHandler) ShortenURL(
 	}
 
 	shortUrl := &domain.ShortURL{
-		OriginalURL: cmd.OriginalURL,
-		Alias:       shorten(id.ID()),
-		CreatedAt:   time.Now(),
+		LongURL:   cmd.OriginalURL,
+		ID:        shorten(id.ID()),
+		CreatedAt: time.Now(),
 	}
 
 	err = h.storage.Add(ctx, shortUrl)

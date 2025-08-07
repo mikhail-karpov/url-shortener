@@ -3,14 +3,11 @@ package web
 import (
 	"encoding/json"
 	"errors"
-	"github.com/mikhail-karpov/url-shortener/internal/domain"
 	"log"
 	"net/http"
-)
 
-type errEnvelope struct {
-	Error string `json:"error"`
-}
+	"github.com/mikhail-karpov/url-shortener/internal/domain"
+)
 
 func readJSON(w http.ResponseWriter, r *http.Request, data interface{}) error {
 
@@ -36,15 +33,15 @@ func writeOK(w http.ResponseWriter, data interface{}) {
 }
 
 func writeBadRequest(w http.ResponseWriter, msg string) {
-	writeJSON(w, http.StatusBadRequest, &errEnvelope{Error: msg})
+	writeJSON(w, http.StatusBadRequest, &ErrResponse{Error: msg})
 }
 
 func writeErr(w http.ResponseWriter, err error) {
 
 	if errors.Is(err, domain.ErrNotFound) {
-		writeJSON(w, http.StatusNotFound, &errEnvelope{Error: err.Error()})
+		writeJSON(w, http.StatusNotFound, &ErrResponse{Error: err.Error()})
 	} else {
 		log.Printf("unexpected error: %s\n", err)
-		writeJSON(w, http.StatusInternalServerError, &errEnvelope{Error: "something went wrong"})
+		writeJSON(w, http.StatusInternalServerError, &ErrResponse{Error: "something went wrong"})
 	}
 }

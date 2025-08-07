@@ -29,21 +29,22 @@ func TestRedisRepository(t *testing.T) {
 	redisAddr, err := container.Endpoint(ctx, "")
 	require.NoError(t, err)
 
-	cache, err := NewCache(Config{
+	client, err := NewClient(Config{
 		Addr:     redisAddr,
 		Password: "",
 		DB:       0,
 	})
+	defer client.Close()
 	require.NoError(t, err)
 
-	repository := NewRepository(cache, 0)
+	repository := NewRepository(client, 0)
 
 	t.Run("stores url", func(t *testing.T) {
 
 		expected := &domain.ShortURL{
-			Alias:       "google",
-			OriginalURL: "https://google.com",
-			CreatedAt:   time.Now(),
+			ID:        "google",
+			LongURL:   "https://google.com",
+			CreatedAt: time.Now(),
 		}
 
 		err := repository.Add(ctx, expected)
@@ -51,8 +52,8 @@ func TestRedisRepository(t *testing.T) {
 
 		actual, err := repository.Get(ctx, "google")
 		require.NoError(t, err)
-		assert.Equal(t, expected.Alias, actual.Alias)
-		assert.Equal(t, expected.OriginalURL, actual.OriginalURL)
+		assert.Equal(t, expected.ID, actual.ID)
+		assert.Equal(t, expected.LongURL, actual.LongURL)
 	})
 
 	t.Run("returns error if url not found", func(t *testing.T) {

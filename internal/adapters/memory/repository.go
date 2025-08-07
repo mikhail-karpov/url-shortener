@@ -2,8 +2,9 @@ package memory
 
 import (
 	"context"
-	"github.com/mikhail-karpov/url-shortener/internal/domain"
 	"sync"
+
+	"github.com/mikhail-karpov/url-shortener/internal/domain"
 )
 
 type Repository struct {
@@ -22,15 +23,15 @@ func (r *Repository) Add(_ context.Context, shortUrl *domain.ShortURL) error {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	r.urls[shortUrl.Alias] = *shortUrl
+	r.urls[shortUrl.ID] = *shortUrl
 	return nil
 }
 
-func (r *Repository) Get(_ context.Context, alias string) (*domain.ShortURL, error) {
+func (r *Repository) Get(_ context.Context, id string) (*domain.ShortURL, error) {
 	r.m.RLock()
 	defer r.m.RUnlock()
 
-	shortUrl, ok := r.urls[alias]
+	shortUrl, ok := r.urls[id]
 	if !ok {
 		return nil, domain.ErrNotFound
 	}

@@ -3,11 +3,15 @@ package web
 import "time"
 
 type ShortenURLRequest struct {
-	URL string `json:"url"`
+	LongURL string `json:"long_url"`
 }
 
 type ShortURLResponse struct {
-	OriginalURL string    `json:"original_url"`
-	Alias       string    `json:"alias"`
-	CreatedAt   time.Time `json:"created_at"`
+	ID        string    `json:"id"`
+	LongURL   string    `json:"long_url"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type ErrResponse struct {
+	Error string `json:"error"`
 }

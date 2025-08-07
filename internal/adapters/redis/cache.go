@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/mikhail-karpov/url-shortener/internal/domain"
 	"github.com/redis/go-redis/v9"
 	"log"
 	"time"
@@ -19,8 +20,7 @@ type Cache struct {
 	client *redis.Client
 }
 
-func NewCache(cfg Config) (*Cache, error) {
-
+func NewClient(cfg Config) (*redis.Client, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr:     cfg.Addr,
 		Password: cfg.Password,
@@ -29,14 +29,14 @@ func NewCache(cfg Config) (*Cache, error) {
 
 	pong, err := client.Ping(context.Background()).Result()
 	if err != nil {
-		return nil, err
+		return client, err
 	}
 
 	if pong != "PONG" {
-		return nil, fmt.Errorf("failed to ping redis server")
+		return client, fmt.Errorf("redis ping failed")
 	}
 
-	return &Cache{client: client}, nil
+	return client, nil
 }
 
 func (cache *Cache) Put(ctx context.Context, key string, data interface{}, ttl time.Duration) error {
@@ -58,7 +58,7 @@ func (cache *Cache) Get(ctx context.Context, key string, data interface{}) error
 	value, err := cache.client.Get(ctx, key).Result()
 	if err != nil {
 		log.Printf("failed to get data: %s", err)
-		return err
+		return domain.ErrNotFound
 	}
 
 	err = json.Unmarshal([]byte(value), data)

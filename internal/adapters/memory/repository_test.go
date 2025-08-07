@@ -14,9 +14,9 @@ func TestRepository(t *testing.T) {
 	var (
 		repo        = NewRepository()
 		expectedUrl = &domain.ShortURL{
-			Alias:       "alias",
-			OriginalURL: "https://google.com",
-			CreatedAt:   time.Now(),
+			ID:        "alias",
+			LongURL:   "https://google.com",
+			CreatedAt: time.Now(),
 		}
 	)
 

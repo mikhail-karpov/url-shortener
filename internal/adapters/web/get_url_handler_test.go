@@ -2,15 +2,17 @@ package web
 
 import (
 	"context"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+	"time"
+
 	"github.com/mikhail-karpov/url-shortener/internal/adapters/memory"
 	"github.com/mikhail-karpov/url-shortener/internal/application"
 	"github.com/mikhail-karpov/url-shortener/internal/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"net/http"
-	"net/http/httptest"
-	"testing"
-	"time"
 )
 
 func TestRedirectURLHandler(t *testing.T) {
@@ -18,15 +20,15 @@ func TestRedirectURLHandler(t *testing.T) {
 	var (
 		repo         = memory.NewRepository()
 		queryHandler = application.NewShortURLQueryHandler(repo)
-		handler      = RedirectURLHandler(queryHandler)
+		handler      = GetShortURLHandler(queryHandler)
 	)
 
-	t.Run("redirects to original url", func(t *testing.T) {
+	t.Run("returns 200 with short url", func(t *testing.T) {
 
 		err := repo.Add(context.Background(), &domain.ShortURL{
-			OriginalURL: "https://example.com",
-			Alias:       "example",
-			CreatedAt:   time.Now(),
+			LongURL:   "https://example.com",
+			ID:        "example",
+			CreatedAt: time.Now(),
 		})
 		require.NoError(t, err)
 
@@ -36,8 +38,11 @@ func TestRedirectURLHandler(t *testing.T) {
 		recorder := httptest.NewRecorder()
 		handler.ServeHTTP(recorder, request)
 
-		assert.Equal(t, http.StatusFound, recorder.Code)
-		assert.Equal(t, "https://example.com", recorder.Header().Get("Location"))
+		var response ShortURLResponse
+		require.NoError(t, json.Unmarshal(recorder.Body.Bytes(), &response))
+		assert.Equal(t, "https://example.com", response.LongURL)
+		assert.Equal(t, "example", response.ID)
+		assert.NotNil(t, response.CreatedAt)
 	})
 
 	t.Run("returns 404 if url not found", func(t *testing.T) {

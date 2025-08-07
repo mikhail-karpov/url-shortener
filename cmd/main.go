@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/mikhail-karpov/url-shortener/configs"
 	r "github.com/mikhail-karpov/url-shortener/internal/adapters/redis"
 	"github.com/mikhail-karpov/url-shortener/internal/adapters/web"
 	"github.com/mikhail-karpov/url-shortener/internal/application"
@@ -17,14 +19,15 @@ import (
 
 func main() {
 
-	repo, err := initRedisRepository()
+	cfg := configs.InitConfig()
+	repo, err := initRedisRepository(cfg.Redis)
 	if err != nil {
 		panic(err)
 	}
 
 	cmdHandler := application.NewShortenURLCmdHandler(repo)
 	queryHandler := application.NewShortURLQueryHandler(repo)
-	server := initHttpServer(cmdHandler, queryHandler)
+	server := initHttpServer(cfg, cmdHandler, queryHandler)
 
 	go func() {
 		err := server.ListenAndServe()
@@ -49,13 +52,7 @@ func main() {
 	}
 }
 
-func initRedisRepository() (*r.Repository, error) {
-
-	cfg := r.Config{
-		Addr:     "localhost:6379",
-		Password: "",
-		DB:       0,
-	}
+func initRedisRepository(cfg r.Config) (*r.Repository, error) {
 
 	cache, err := r.NewCache(cfg)
 	if err != nil {
@@ -66,6 +63,7 @@ func initRedisRepository() (*r.Repository, error) {
 }
 
 func initHttpServer(
+	cfg configs.Config,
 	cmd *application.ShortenURLCmdHandler,
 	query *application.ShortURLQueryHandler) *http.Server {
 
@@ -84,7 +82,7 @@ func initHttpServer(
 	})
 
 	return &http.Server{
-		Addr:    ":8080",
+		Addr:    fmt.Sprintf(":%d", cfg.HTTP.Port),
 		Handler: router,
 	}
 }

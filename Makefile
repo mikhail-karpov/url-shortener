@@ -11,4 +11,4 @@ make run:
 PHONY: run-docker
 make run-docker:
 	@echo "Starting containers..."
-	docker compose up -d
+	@docker compose up --build -d

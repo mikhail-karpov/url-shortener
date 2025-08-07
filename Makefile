@@ -7,3 +7,8 @@ PHONY: run
 make run:
 	@echo "Running app..."
 	@go run ./cmd
+
+PHONY: run-docker
+make run-docker:
+	@echo "Starting containers..."
+	docker compose up -d

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/mikhail-karpov/url-shortener/internal/adapters/memory"
+	r "github.com/mikhail-karpov/url-shortener/internal/adapters/redis"
 	"github.com/mikhail-karpov/url-shortener/internal/adapters/web"
 	"github.com/mikhail-karpov/url-shortener/internal/application"
 	"log"
@@ -17,7 +17,11 @@ import (
 
 func main() {
 
-	repo := memory.NewRepository()
+	repo, err := initRedisRepository()
+	if err != nil {
+		panic(err)
+	}
+
 	cmdHandler := application.NewShortenURLCmdHandler(repo)
 	queryHandler := application.NewShortURLQueryHandler(repo)
 	server := initHttpServer(cmdHandler, queryHandler)
@@ -37,12 +41,28 @@ func main() {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := server.Shutdown(shutdownCtx)
+	err = server.Shutdown(shutdownCtx)
 	if err != nil {
 		log.Printf("unable to shutdown http server: %s\n", err)
 	} else {
 		log.Println("server gracefully stopped")
 	}
+}
+
+func initRedisRepository() (*r.Repository, error) {
+
+	cfg := r.Config{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	}
+
+	cache, err := r.NewCache(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.NewRepository(cache, 0), nil
 }
 
 func initHttpServer(

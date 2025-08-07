@@ -79,6 +79,10 @@ func initHttpServer(
 		r.Get("/{alias}", web.RedirectURLHandler(query))
 	})
 
+	router.Route("/health", func(r chi.Router) {
+		r.Get("/liveness", web.HealthcheckHandler())
+	})
+
 	return &http.Server{
 		Addr:    ":8080",
 		Handler: router,

@@ -14,15 +14,16 @@ import (
 func TestRedisRepository(t *testing.T) {
 
 	ctx := context.Background()
-
-	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+	request := testcontainers.GenericContainerRequest{
 		ContainerRequest: testcontainers.ContainerRequest{
 			Image:        "redis:7.4.1-alpine",
 			ExposedPorts: []string{"6379/tcp"},
 			WaitingFor:   wait.ForLog("Ready to accept connections"),
 		},
 		Started: true,
-	})
+	}
+	container, err := testcontainers.GenericContainer(ctx, request)
+	defer testcontainers.CleanupContainer(t, container)
 	require.NoError(t, err)
 
 	redisAddr, err := container.Endpoint(ctx, "")

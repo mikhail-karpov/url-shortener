@@ -1,0 +1,75 @@
+basePath: /api/v1
+consumes:
+- application/json
+definitions:
+  web.ErrResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  web.ShortURLResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      long_url:
+        type: string
+    type: object
+  web.ShortenURLRequest:
+    properties:
+      long_url:
+        type: string
+    type: object
+info:
+  contact: {}
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  title: URL Shortener
+  version: "1.0"
+paths:
+  /{id}:
+    get:
+      parameters:
+      - description: URL id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.ShortURLResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/web.ErrResponse'
+      summary: Get URL
+      tags:
+      - URL
+  /shorten:
+    post:
+      parameters:
+      - description: long URL
+        in: body
+        name: longUrl
+        required: true
+        schema:
+          $ref: '#/definitions/web.ShortenURLRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.ShortURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/web.ErrResponse'
+      summary: Shorten URL
+      tags:
+      - URL
+produces:
+- application/json
+swagger: "2.0"

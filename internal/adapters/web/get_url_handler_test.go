@@ -33,7 +33,7 @@ func TestRedirectURLHandler(t *testing.T) {
 		require.NoError(t, err)
 
 		request := httptest.NewRequest(http.MethodGet, "/", nil)
-		request.SetPathValue("alias", "example")
+		request.SetPathValue("id", "example")
 
 		recorder := httptest.NewRecorder()
 		handler.ServeHTTP(recorder, request)
@@ -48,7 +48,7 @@ func TestRedirectURLHandler(t *testing.T) {
 	t.Run("returns 404 if url not found", func(t *testing.T) {
 
 		request := httptest.NewRequest(http.MethodGet, "/", nil)
-		request.SetPathValue("alias", "google")
+		request.SetPathValue("id", "google")
 
 		recorder := httptest.NewRecorder()
 		handler.ServeHTTP(recorder, request)

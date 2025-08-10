@@ -12,6 +12,14 @@ type CmdHandler interface {
 	ShortenURL(ctx context.Context, cmd *application.ShortenURLCmd) (*domain.ShortURL, error)
 }
 
+// ShortenURLHandler godoc
+//
+// @tags		URL
+// @summary		Shorten URL
+// @param		longUrl		body		web.ShortenURLRequest	true	"long URL"
+// @success		200			{object}	web.ShortURLResponse
+// @failure		400			{object}	web.ErrResponse
+// @router		/shorten	[post]
 func ShortenURLHandler(cmdHandler CmdHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 

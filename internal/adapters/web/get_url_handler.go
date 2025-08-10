@@ -12,17 +12,25 @@ type ShortURLProvider interface {
 	Get(ctx context.Context, query application.ShortURLQuery) (*domain.ShortURL, error)
 }
 
+// GetShortURLHandler godoc
+//
+// @tags 		URL
+// @summary 	Get URL
+// @param		id		path		string true	"URL id"
+// @success 	200		{object}	web.ShortURLResponse
+// @failure 	404		{object}	web.ErrResponse
+// @router		/{id}	[get]
 func GetShortURLHandler(provider ShortURLProvider) http.HandlerFunc {
 
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 
-		alias := r.PathValue("alias")
-		if alias == "" {
+		id := r.PathValue("id")
+		if id == "" {
 			writeBadRequest(w, "invalid alias")
 			return
 		}
 
-		query := application.ShortURLQuery{ID: alias}
+		query := application.ShortURLQuery{ID: id}
 		shortUrl, err := provider.Get(r.Context(), query)
 		if err != nil {
 			writeErr(w, err)
@@ -35,5 +43,5 @@ func GetShortURLHandler(provider ShortURLProvider) http.HandlerFunc {
 			CreatedAt: shortUrl.CreatedAt,
 		}
 		writeOK(w, response)
-	})
+	}
 }

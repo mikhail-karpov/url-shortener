@@ -15,3 +15,9 @@ test:
 run:
 	@echo "Starting containers..."
 	@docker compose up --build -d
+
+## swagger: generates Swagger documentation
+.PHONY: swagger
+swagger:
+	@echo "Generating Swagger documentation..."
+	@swag init -g cmd/main.go

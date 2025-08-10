@@ -1,15 +1,13 @@
 FROM golang:1.24-alpine AS builder
 
-WORKDIR /app
-COPY go.mod ./
-RUN go mod download
-
+WORKDIR /opt/app
+COPY go.mod go.sum ./
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o server ./cmd/main.go
 
-FROM alpine:latest
-WORKDIR /root/
-COPY --from=builder /app/main .
+FROM scratch
+WORKDIR /opt/app
+COPY --from=builder /opt/app/server server
 
 EXPOSE 8080
-ENTRYPOINT ["./main"]
+ENTRYPOINT ["./server"]

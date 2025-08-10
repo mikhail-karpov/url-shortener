@@ -10,6 +10,12 @@ test:
 	@echo "Running tests..."
 	@go test -v ./...
 
+## load-test: runs load test
+.PHONY: load-test
+load-test:
+	@echo "Running load test..."
+	@docker run --rm -i grafana/k6:1.1.0 run - <./docker/k6/load-test.js
+
 ## run: runs app in Docker
 .PHONY: run
 run:
